@@ -40,4 +40,12 @@ defmodule SgfTest do
     actual = Sgf.Parser.parse ";B[pd]"
     assert %Branch{ node_branches: [%Node{ ident_props: %{B: ["pd"]}}]} == actual
   end
+
+  test "create a branch with two nodes" do
+    actual = Sgf.Parser.parse ";B[pd];W[hg]"
+    assert %Branch{ node_branches: [
+        %Node{ ident_props: %{B: ["pd"]}},
+        %Node{ ident_props: %{W: ["hg"]}},
+      ]} == actual
+  end
 end

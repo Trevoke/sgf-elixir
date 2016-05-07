@@ -9,17 +9,18 @@ defmodule Sgf.Parser do
       node_branches: []
     }
     foo = tree
-    |> String.split("")
-    |> munge_list(acc)
-    %Branch{ node_branches: [foo] }
+    |> parse_branch(acc)
+    %Branch{ node_branches: foo }
   end
 
-  def munge_list([";" | tail], _acc) do
-   parse_node(tail)
+  def parse_branch(";" <> tail, _acc) do
+    String.split(tail, ";")
+    |> Enum.map(&parse_node/1)
   end
 
   def parse_node(char_list) when is_list(char_list) do
     temp_props = char_list
+      |> Stream.take_while(fn(char) -> char != ";" && char != "(" end)
       |> Enum.reduce(
         %{ ident_props: %{}, identity: "", current_val: ""},
         &read_char_to_node/2
