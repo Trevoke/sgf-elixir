@@ -24,13 +24,21 @@ defmodule Sgf.Parser do
   end
 
   defp read_char_to_node("[", acc) do
-    %{acc | identity: String.to_atom(acc.current_val), current_val: ""}
+     if (acc.current_val == "") do
+       acc
+     else
+      %{acc | identity: String.to_atom(acc.current_val), current_val: ""}
+     end
   end
 
   defp read_char_to_node("]", acc) do
+      foo = Map.update(acc.ident_props, 
+       acc.identity,
+       [acc.current_val],
+       fn(val) -> val ++ acc.current_val end)
     %{
       acc |
-      ident_props: Map.put(acc.ident_props, acc.identity, acc.current_val),
+      ident_props: foo,
       current_val: ""
     }
   end
