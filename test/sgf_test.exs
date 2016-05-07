@@ -3,20 +3,6 @@ defmodule SgfTest do
   alias Sgf.Node
   alias Sgf.Branch
 
-  #  test "parses a branch with one node" do
-  #    branch = "(;B[pd]N[Moves, comments, annotations];W[dp]GW[1])"
-  #    tree = Sgf.Parser.parse branch
-  #    expected = ["B[pd]N[Moves, comments, annotations]", "W[dp]GW[1]"]
-  #    assert tree == expected
-  #  end
-  #
-  #  test "creates a struct representation of the node" do
-  #    node_string = "B[pd]N[Moves, comments, annotations]"
-  #    struct = Sgf.Parser.nodify node_string
-  #    expected = %{B: "pd", N: "Moves, comments, annotations"}
-  #    assert struct == expected
-  #  end
-
   test "create a simple node" do
     actual = Sgf.Parser.parse_node("B[pd]")
     assert %Node{ ident_props: %{B: ["pd"]}} == actual
@@ -47,5 +33,19 @@ defmodule SgfTest do
         %Node{ ident_props: %{B: ["pd"]}},
         %Node{ ident_props: %{W: ["hg"]}},
       ]} == actual
+  end
+
+  test "create a branch with a variation" do
+    branch = ";B[pd](;W[dd])(;W[de])"
+    actual = Sgf.Parser.parse(branch)
+    expected = %Branch{ node_branches: [
+        %Node{ ident_props: %{B: ["pd"]}},
+        [
+          %Branch{ node_branches: [ %Node{ ident_props: %{W: ["dd"]}} ] },
+          %Branch{ node_branches: [ %Node{ ident_props: %{W: ["de"]}} ] }
+        ]
+      ]
+    }
+    assert expected == actual
   end
 end

@@ -3,19 +3,45 @@ defmodule Sgf.Parser do
   alias Sgf.Branch
 
   def parse(tree) do
-    acc = %{
-      current_val: "",
-      identity: "",
-      node_branches: []
-    }
     foo = tree
-    |> parse_branch(acc)
+    |> parse_branch
     %Branch{ node_branches: foo }
   end
 
-  def parse_branch(";" <> tail, _acc) do
-    String.split(tail, ";")
+  def parse_branch("(" <> tail) do
+     index = find_matching_close_parens(tail)
+     parse(String.slice(tail, 0, index))
+  end
+
+  def parse_branch(";" <> tail) do
+    Enum.take_while(tail, fn(x) -> x != "(" end)
+    |> String.split(";")
     |> Enum.map(&parse_node/1)
+  end
+
+  def find_matching_close_parens(string) do
+    String.split(string, "")
+    |> Enum.reduce(%{depth: 0, index: 0}, &blarg/2)
+  end
+
+  def blarg("(", acc) do
+     %{ depth: acc.depth + 1, index: acc.index + 1}
+  end
+
+  def blarg(")", acc) do
+     %{ depth: acc.depth - 1, index: acc.index + 1}
+  end
+
+  def blarg(")", %{depth: 0} = acc) do
+   %{matching_parens: acc.index}
+  end
+
+  def blarg(_, %{matching_parens: index} = acc) do
+    acc
+  end
+
+  def blarg(_, acc) do
+     %{ acc | index: acc.index + 1}
   end
 
   def parse_node(char_list) when is_list(char_list) do
