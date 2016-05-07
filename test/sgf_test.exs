@@ -1,6 +1,7 @@
 defmodule SgfTest do
   use ExUnit.Case
   alias Sgf.Node
+  alias Sgf.Branch
 
   #  test "parses a branch with one node" do
   #    branch = "(;B[pd]N[Moves, comments, annotations];W[dp]GW[1])"
@@ -35,5 +36,8 @@ defmodule SgfTest do
     } == actual
   end
 
-  # indent props needs to be able to handle mulitple props for a single identitiy
+  test "create a branch with a single node" do
+    actual = Sgf.Parser.parse ";B[pd]"
+    assert %Branch{ node_branches: [%Node{ ident_props: %{B: ["pd"]}}]} == actual
+  end
 end

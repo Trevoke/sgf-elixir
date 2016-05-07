@@ -1,20 +1,25 @@
 defmodule Sgf.Parser do
-  import Regex
-  require IEx
   alias Sgf.Node
+  alias Sgf.Branch
 
   def parse(tree) do
-    [ [_, branch] | _]  = Regex.scan(~r/\((.*)\)/, tree)
-    parse_branch branch
+    acc = %{
+      current_val: "",
+      identity: "",
+      node_branches: []
+    }
+    foo = tree
+    |> String.split("")
+    |> munge_list(acc)
+    %Branch{ node_branches: [foo] }
   end
 
-  def parse_node(node_string) do
-    # %{
-      # indentProps
-      # currentVal partial ident or partial prop
-      # }
-    temp_props = node_string
-      |> String.split("")
+  def munge_list([";" | tail], _acc) do
+   parse_node(tail)
+  end
+
+  def parse_node(char_list) when is_list(char_list) do
+    temp_props = char_list
       |> Enum.reduce(
         %{ ident_props: %{}, identity: "", current_val: ""},
         &read_char_to_node/2
@@ -23,16 +28,22 @@ defmodule Sgf.Parser do
       %Node{ ident_props: temp_props.ident_props}
   end
 
+  def parse_node(node_string) when is_bitstring(node_string) do
+    node_string
+      |> String.split("")
+      |> parse_node
+  end
+
+  defp read_char_to_node("[", %{current_val: ""} = acc) do
+     acc
+  end
+
   defp read_char_to_node("[", acc) do
-     if (acc.current_val == "") do
-       acc
-     else
-      %{acc | identity: String.to_atom(acc.current_val), current_val: ""}
-     end
+    %{acc | identity: String.to_atom(acc.current_val), current_val: ""}
   end
 
   defp read_char_to_node("]", acc) do
-      foo = Map.update(acc.ident_props, 
+      foo = Map.update(acc.ident_props,
        acc.identity,
        [acc.current_val],
        fn(val) -> val ++ acc.current_val end)
@@ -45,11 +56,6 @@ defmodule Sgf.Parser do
 
   defp read_char_to_node(char, acc) do
       %{acc | current_val: acc.current_val <> char}
-  end
-
-  defp parse_branch(branch) do
-    [_ | nodes] = String.split(branch, ";")
-    #properties = Enum.map(nodes, fn element -> Regex.scan(~r/(\w?*)(\[.*\])/, element))
   end
 end
 
