@@ -6,9 +6,9 @@ defimpl Inspect, for: Node do
       |> Map.keys
       |> Enum.reduce("", fn(key, acc) ->
         stringified_vals = Map.get(props, key)
-          |> Enum.reduce("", fn(val, acc) -> acc <> "[" <> val <> "]" end)
+          |> Enum.reduce("", fn(val, acc) -> "#{acc}[#{val}]" end)
 
-        acc <> ";" <> to_string(key) <> stringified_vals
+        "#{acc};#{to_string(key)}#{stringified_vals}"
       end)
   end
 end
