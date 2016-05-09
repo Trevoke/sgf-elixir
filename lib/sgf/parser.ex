@@ -21,36 +21,21 @@ defmodule Sgf.Parser do
 
   def find_matching_close_parens(string) do
     String.split(string, "")
-    |> Enum.reduce(%{depth: 0, index: 0}, &blarg/2)
+    |> Enum.reduce(%{depth: 0, index: 0}, &find_matching_parens/2)
   end
 
-  def blarg("(", acc) do
-     %{ depth: acc.depth + 1, index: acc.index + 1}
-  end
-
-  def blarg(")", acc) do
-     %{ depth: acc.depth - 1, index: acc.index + 1}
-  end
-
-  def blarg(")", %{depth: 0} = acc) do
-   %{matching_parens: acc.index}
-  end
-
-  def blarg(_, %{matching_parens: index} = acc) do
-    acc
-  end
-
-  def blarg(_, acc) do
-     %{ acc | index: acc.index + 1}
-  end
+  defp find_matching_parens("(",                           acc), do: %{depth: acc.depth + 1, index: acc.index + 1}
+  defp find_matching_parens(")",             %{depth: 0} = acc), do: %{matching_parens: acc.index}
+  defp find_matching_parens(")",                           acc), do: %{depth: acc.depth - 1, index: acc.index + 1}
+  defp find_matching_parens(_, %{matching_parens: index} = acc), do: acc
+  defp find_matching_parens(_,                             acc), do: %{acc | index: acc.index + 1}
 
   def parse_node(char_list) when is_list(char_list) do
     temp_props = char_list
     |> Stream.take_while(fn(char) -> char != ";" && char != "(" end)
     |> Enum.reduce(
       %{ ident_props: %{}, identity: "", current_val: ""},
-      &read_char_to_node/2
-    )
+      &read_char_to_node/2)
 
       %Node{ ident_props: temp_props.ident_props}
   end
@@ -61,14 +46,8 @@ defmodule Sgf.Parser do
     |> parse_node
   end
 
-  defp read_char_to_node("[", %{current_val: ""} = acc) do
-     acc
-  end
-
-  defp read_char_to_node("[", acc) do
-    %{acc | identity: String.to_atom(acc.current_val), current_val: ""}
-  end
-
+  defp read_char_to_node("[", %{current_val: ""} = acc), do: acc
+  defp read_char_to_node("[", acc), do: %{acc | identity: String.to_atom(acc.current_val), current_val: ""}
   defp read_char_to_node("]", acc) do
       foo = Map.update(acc.ident_props,
        acc.identity,
@@ -80,9 +59,5 @@ defmodule Sgf.Parser do
       current_val: ""
     }
   end
-
-  defp read_char_to_node(char, acc) do
-      %{acc | current_val: acc.current_val <> char}
-  end
+  defp read_char_to_node(char, acc), do: %{acc | current_val: acc.current_val <> char}
 end
-
