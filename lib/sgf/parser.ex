@@ -1,6 +1,7 @@
 defmodule Sgf.Parser do
   alias Sgf.Node
   alias Sgf.Branch
+  alias Sgf.StringHelper
 
   def parse(tree) do
     foo = tree
@@ -9,7 +10,7 @@ defmodule Sgf.Parser do
   end
 
   def parse_branch("(" <> tail) do
-     index = find_matching_close_parens(tail)
+     index = StringHelper.find_matching_close_paren(tail)
      parse(String.slice(tail, 0, index))
   end
 
@@ -19,16 +20,6 @@ defmodule Sgf.Parser do
     |> Enum.map(&parse_node/1)
   end
 
-  def find_matching_close_parens(string) do
-    String.split(string, "")
-    |> Enum.reduce(%{depth: 0, index: 0}, &find_matching_parens/2)
-  end
-
-  defp find_matching_parens("(",                           acc), do: %{depth: acc.depth + 1, index: acc.index + 1}
-  defp find_matching_parens(")",             %{depth: 0} = acc), do: %{matching_parens: acc.index}
-  defp find_matching_parens(")",                           acc), do: %{depth: acc.depth - 1, index: acc.index + 1}
-  defp find_matching_parens(_, %{matching_parens: index} = acc), do: acc
-  defp find_matching_parens(_,                             acc), do: %{acc | index: acc.index + 1}
 
   def parse_node(char_list) when is_list(char_list) do
     temp_props = char_list
