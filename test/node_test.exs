@@ -5,21 +5,19 @@ defmodule NodeTest do
   test "create a simple node" do
     test_string = "B[pd]"
     actual = Sgf.Node.parse_node(test_string)
-    assert %Node{ ident_props: %{B: ["pd"]}} == actual
+    assert ";#{test_string}" == inspect(actual)
   end
 
   test "create a complex node" do
-    actual = Sgf.Node.parse_node "B[pd]N[Moves, comments, annotations]"
-    assert %Node{
-      ident_props: %{B: ["pd"], N: ["Moves, comments, annotations"]}
-    } == actual
+    test_string =  "B[pd]N[Moves, comments, annotations]"
+    actual = Sgf.Node.parse_node test_string
+    assert ";#{test_string}" == inspect(actual)
   end
 
   test "create a node with multiple props for a single ident" do
-    actual = Sgf.Node.parse_node "AB[pd][af]"
-    assert %Node{
-      ident_props: %{AB: ["pd", "af"]}
-    } == actual
+    test_string = "AB[pd][af]"
+    actual = Sgf.Node.parse_node test_string
+    assert ";#{test_string}" == inspect(actual)
   end
 
 end
