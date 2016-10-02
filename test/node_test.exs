@@ -20,4 +20,10 @@ defmodule NodeTest do
     assert ";#{test_string}" == inspect(actual)
   end
 
+  test "parses a comment" do
+    test_string = "C[Oh hi\\] there]"
+    actual = Sgf.Node.parse_node test_string
+    assert ";#{test_string}" == inspect(actual)
+  end
+
 end
