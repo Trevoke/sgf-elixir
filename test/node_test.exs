@@ -26,4 +26,16 @@ defmodule NodeTest do
     assert ";#{test_string}" == inspect(actual)
   end
 
+  test "parses a node with a few properties around a comment" do
+    expected = %Sgf.Node{ident_props: %{AB: ["pd", "af"],
+                                        C: ["Oh hi\\] there"],
+                                        B: ["pd"],
+                                        N: ["Moves, comments, annotations"]}}
+    test_string = "AB[pd][af]C[Oh hi\\] there]B[pd]N[Moves, comments, annotations]"
+    actual = Sgf.Node.parse_node test_string
+    IO.inspect actual
+    IO.inspect expected
+    assert expected == actual
+  end
+
 end
