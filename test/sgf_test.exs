@@ -4,12 +4,12 @@ defmodule SgfTest do
   alias Sgf.Node
 
   test "create a branch with a single node" do
-    actual = Sgf.Parser.parse ";B[pd]"
+    actual = Sgf.Parser.parse "(;B[pd])"
     assert %Branch{ node_branches: [%Node{ ident_props: %{B: ["pd"]}}]} == actual
   end
 
   test "create a branch with two nodes" do
-    actual = Sgf.Parser.parse ";B[pd];W[hg]"
+    actual = Sgf.Parser.parse "(;B[pd];W[hg])"
     assert %Branch{ node_branches: [
         %Node{ ident_props: %{B: ["pd"]}},
         %Node{ ident_props: %{W: ["hg"]}},
@@ -17,7 +17,7 @@ defmodule SgfTest do
   end
 
   test "create a branch with a variation" do
-    branch = ";B[pd](;W[dd])(;W[de])"
+    branch = "(;B[pd](;W[dd])(;W[de]))"
     actual = Sgf.Parser.parse(branch)
     expected = %Branch{ node_branches: [
         %Node{ ident_props: %{B: ["pd"]}},

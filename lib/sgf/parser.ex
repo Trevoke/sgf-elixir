@@ -3,20 +3,31 @@ defmodule Sgf.Parser do
   alias Sgf.Branch
   alias Sgf.StringHelper
 
-  def parse(tree) do
-    foo = tree
-    |> parse_branch
-    %Branch{ node_branches: foo }
+  def parse(tree) when is_bitstring(tree) do
+    tree
+    |> String.graphemes
+    |> parse(%{variation_count: 0})
+    |> branchify
   end
 
-  def parse_branch("(" <> tail) do
-     index = StringHelper.find_matching_close_paren(tail)
-     parse(String.slice(tail, 0, index))
+  def parse(["(" | tail], %{variation_count: variation_count } = acc) do
+    parse(tail, %{variation_count: variation_count + 1})
   end
 
-  def parse_branch(";" <> tail) do
-    Enum.take_while(tail, fn(x) -> x != "(" end)
-    |> String.split(";")
-    |> Enum.map(&Node.parse_node/1)
+  def parse([")" | tail], %{variation_count: variation_count } = acc) do
+    parse(tail, %{acc |
+                  variation_count: variation_count - 1,
+                  })
   end
+
+  def parse([";" | tail], acc) do
+    {:ok, node, length} = Sgf.Node.parse_node(tail)
+    parse(Enum.drop(tail, length), Map.merge(acc, %{node: node}))
+  end
+
+  def parse([], acc), do: acc
+
+  def parse(oops, aaps), do: IO.inspect aaps
+
+  defp branchify(node_branches), do: %Branch{ node_branches: [node_branches.node] }
 end
