@@ -20,55 +20,84 @@ defmodule ExSgf.Parser do
   def generate_gametrees(c, <<"\n", rest::binary >>), do: generate_gametrees(c, rest)
   def generate_gametrees(c, ""), do: c
   def generate_gametrees(c, <<"(", rest::binary>> ) do
-    {gametree, rest} = parse_nodes(%GameTree{}, rest, %{open_branches: 0})
+    {gametree, rest} = parse_gametree(%GameTree{}, rest, %{open_branches: 0})
     nodes = Enum.reverse(gametree.nodes)
-    Map.put(gametree, :nodes, nodes)
+    gametree = Map.put(gametree, :nodes, nodes)
     c = Map.put(c, :gametrees, [gametree | c.gametrees])
     generate_gametrees(c, rest)
   end
-  def parse_nodes(gametree, "", _acc), do: {gametree, ""}
-  def parse_nodes(gametree, <<@new_node, rest::binary>>, acc) do
-    node = %{}
-    {node, rest} = parse_node(node, rest, acc)
-    gametree = %{gametree | nodes: [node | gametree.nodes]}
-    parse_nodes(gametree, rest, acc)
+
+  def parse_gametree(gametree, "", _acc), do: {gametree, ""}
+  def parse_gametree(gametree, <<@new_node, rest::binary>>, acc) do
+    {nodes, rest} = parse_nodes(%{}, rest, Map.put(acc, :nodes, []))
+    acc = Map.put(acc, :nodes, [])
+    parse_gametree(%{gametree | nodes: nodes}, rest, acc)
   end
 
-  # .. also close gametree?
-  #def parse_nodes(gametree, <<@close_branch, rest::binary>>, %{open_branches: 0}) do
-  #  {gametree, rest}
-  #end
+  # use put_node everywhere?
 
   # close gametree
-  def parse_node(node, <<@close_branch, rest::binary>>, %{open_branches: 0}) do
-    {node, rest}
+  def parse_nodes(current_node, <<@close_branch, rest::binary>>, %{open_branches: 0} = acc) do
+    acc = %{acc | nodes: [current_node | acc.nodes]}
+    {acc.nodes, rest}
   end
 
-  def parse_node(node, string, acc) do
+  def parse_nodes(current_node, <<@close_branch, rest::binary>>, acc) do
+    nodes = put_node(current_node, acc.nodes, acc.open_branches)
+    acc = %{acc | nodes: nodes,
+           open_branches: acc.open_branches - 1}
+    parse_nodes(current_node, rest, acc)
+  end
+
+  def parse_nodes(current_node, <<@open_branch, rest::binary>>, acc) do
+    acc = %{acc | nodes: [[] | acc.nodes],
+            open_branches: acc.open_branches + 1}
+    parse_nodes(current_node, rest, acc)
+  end
+
+  def parse_nodes(current_node, string, acc) do
     {property, string} = parse_property(string, "")
+
+    if property == "" do
+      parse_nodes(%{}, string, acc)
+    else
+
     {value, string} = parse_value(string, "")
-    node = Map.put(node, property, value)
-    parse_node(node, string, acc)
+
+    current_node = Map.put(current_node, property, value)
+    parse_nodes(current_node, string, acc)
+    end
   end
 
-  def parse_property(<<@open_value, rest::binary>>, property) do
-    {property, rest}
-  end
+  def parse_property(<<" ", rest::binary>>, acc), do: parse_property(rest, acc)
+  def parse_property(<<"\n", rest::binary>>, acc), do: parse_property(rest, acc)
+  def parse_property(<<@open_value, rest::binary>>, acc), do: {acc, rest}
 
   def parse_property(<<x::utf8, rest::binary>>, acc) do
-    parse_property(rest, acc <> List.to_string([x]))
+    char = List.to_string([x])
+    if char in @node_delimiters do
+      {"", rest}
+    else
+      parse_property(rest, acc <> List.to_string([x]))
+    end
   end
 
   def parse_value(<<"\\]", rest::binary>>, acc) do
     parse_value(rest, acc <> "\\]")
   end
 
-  def parse_value(<<@close_value, rest::binary>>, acc) do
-    {acc, rest}
-  end
+  def parse_value(<<@close_value, rest::binary>>, acc), do: {acc, rest}
 
   def parse_value(<<x::utf8, rest::binary>>, acc) do
     parse_value(rest, acc <> List.to_string([x]))
+  end
+
+  def put_node(node, nodes, 0) do
+    [node | nodes]
+  end
+
+  def put_node(node, [h | t], x) do
+    [put_node(node, h, x - 1) | t]
   end
 
 end
