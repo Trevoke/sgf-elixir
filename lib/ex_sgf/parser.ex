@@ -27,8 +27,6 @@ defmodule ExSgf.Parser do
   alias RoseTree, as: RTree
   alias RoseTree.Zipper, as: Zipper
 
-  alias ExSgf.{Node, Collection}
-
   defp new_node(), do: RTree.new(%{})
   defp new_node(%{} = props), do: RTree.new(props)
 
@@ -40,40 +38,54 @@ defmodule ExSgf.Parser do
     acc =
       acc
       |> Map.put(:current_node, tree)
-      |> Map.put(:open_branches, -1)
+      |> Map.put(:open_branches, 0)
 
     {gametrees, rest} = parse_gametree(string, acc)
     # Map.put(collection, :gametrees, gametrees)
   end
 
-  def parse_gametree("", %{gametrees: gt}), do: {"", gt}
+  def parse_gametree("", %{current_node: current_node}), do: {current_node, ""}
 
   def parse_gametree(<<@open_branch, rest::binary>>, %{} = acc) do
-    gametree = Node.new()
+    acc = Map.put(acc, :open_branches, acc.open_branches + 1)
 
-    acc =
-      acc
-      |> Map.put(:open_branches, acc.open_branches + 1)
-      |> Map.put(:bag, %{gametree.id => gametree})
-
-    parse_sequence(rest, Map.put(acc, :open_branches, acc.open_branches + 1))
+    parse_sequence(rest, acc)
   end
 
-  def parse_gametree(<<@close_branch, rest::binary>>, %{open_branches: 0} = acc) do
-    {acc.gametrees, rest}
+  def parse_gametree(
+        <<@close_branch, rest::binary>>,
+        %{current_node: current_node, open_branches: 0} = acc
+      ) do
+    {current_node, rest}
   end
 
   def parse_gametree(<<@close_branch, rest::binary>>, %{} = acc) do
-    {node, rest} = parse_sequence(rest, Map.put(acc, :open_branches, acc.open_branches - 1))
+    current_node = Map.get(acc, :current_node)
+
+    current_node =
+      if Zipper.has_parent?(current_node) do
+        Zipper.ascend(current_node) |> elem(1)
+      else
+        current_node
+      end
+
+    acc =
+      acc
+      |> Map.put(:open_branches, acc.open_branches - 1)
+      |> Map.put(:current_node, current_node)
+
+    parse_sequence(rest, acc)
   end
 
   def parse_sequence("", acc), do: {acc.current_node, ""}
 
-  def parse_sequence(<<@open_branch, rest::binary>>, acc) do
-    {"", rest}
+  def parse_sequence(<<@open_branch, rest::binary>> = string, acc) do
+    parse_gametree(string, acc)
   end
 
-  def parse_sequence(<<@close_branch, rest::binary>>, acc), do: {"", rest}
+  def parse_sequence(<<@close_branch, rest::binary>> = string, acc) do
+    parse_gametree(string, acc)
+  end
 
   def parse_sequence(string, %{} = acc) do
     {node1, rest} = parse_node(string, acc)
@@ -96,6 +108,10 @@ defmodule ExSgf.Parser do
 
   def parse_properties(<<@open_branch, rest::binary>>, %{properties: properties} = acc) do
     {properties, @open_branch <> rest}
+  end
+
+  def parse_properties(<<@close_branch, rest::binary>>, %{properties: properties} = acc) do
+    {properties, @close_branch <> rest}
   end
 
   def parse_properties("", %{properties: properties}), do: {properties, ""}
@@ -172,7 +188,6 @@ defmodule ExSgf.Parser do
     value = [h <> List.to_string([x]) | t]
     parse_property_value(rest, Map.put(acc, :property_value, value))
   end
-
 
   def maybe_add_child(nil, {%RoseTree{}, _} = zipper), do: zipper
   def maybe_add_child(nil, node1), do: RoseTree.Zipper.from_tree(node1)

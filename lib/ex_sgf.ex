@@ -9,6 +9,6 @@ defmodule ExSgf do
   Hello world.
   """
   def from_string(string) do
-    Parser.generate_collection(string)
+    Parser.parse_collection(string)
   end
 end
