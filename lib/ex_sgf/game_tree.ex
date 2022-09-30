@@ -1,3 +1,3 @@
 defmodule ExSgf.GameTree do
-  defstruct [nodes: [], properties: %{}]
+  defstruct [next: [], properties: %{}, parent: nil]
 end
