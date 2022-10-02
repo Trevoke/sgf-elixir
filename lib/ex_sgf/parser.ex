@@ -27,11 +27,12 @@ defmodule ExSgf.Parser do
 
   alias RoseTree, as: RTree
   alias RoseTree.Zipper, as: Zipper
+  alias ExSgf.Accumulator, as: A
 
-  defp new_node(), do: RTree.new(%{})
+  defp new_node(), do: RTree.new(%{collection_root: true})
   defp new_node(%{} = props), do: RTree.new(props)
 
-  def parse_collection(string), do: parse_collection(string, %{})
+  def parse_collection(string), do: parse_collection(string, %A{})
 
   def parse_collection(string, acc) do
     root = new_node() |> Zipper.from_tree()
@@ -52,7 +53,6 @@ defmodule ExSgf.Parser do
   def parse_gametrees(<<"\t", rest::binary>>, acc), do: parse_gametrees(rest, acc)
 
   def parse_gametrees(string, acc) do
-    IO.inspect string
     {string, acc} = parse_gametree(string, acc)
     root = Zipper.to_root(acc.current_node)
     parse_gametrees(string, Map.put(acc, :current_node, root))
@@ -94,7 +94,6 @@ defmodule ExSgf.Parser do
       |> Map.put(:open_branches, acc.open_branches - 1)
       |> Map.put(:current_node, current_node)
 
-    #IO.inspect(rest)
     parse_sequence(rest, acc)
   end
 
@@ -116,7 +115,7 @@ defmodule ExSgf.Parser do
     {rest, node1} = parse_node(string, acc)
 
     current_node = maybe_add_child(Map.get(acc, :current_node, nil), node1)
-    IO.inspect current_node
+
     acc = Map.put(acc, :current_node, current_node)
     parse_sequence(rest, acc)
   end
@@ -175,7 +174,7 @@ defmodule ExSgf.Parser do
     {acc.property_identity, string}
   end
 
-  def parse_property_identity(<<x::utf8, rest::binary>>, %{} = acc) do
+  def parse_property_identity(<<x::utf8, rest::binary>>, %A{} = acc) do
     parse_property_identity(
       rest,
       Map.update(

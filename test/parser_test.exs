@@ -2,6 +2,7 @@ defmodule ExSgf.ParserTest do
   use ExUnit.Case, async: true
 
   alias ExSgf.Parser
+  alias ExSgf.Accumulator, as: A
 
   doctest ExSgf.Parser
 
@@ -15,7 +16,7 @@ defmodule ExSgf.ParserTest do
     test "continues until it finds an open bracket" do
       chunk = "AB["
       expected = {"AB", "["}
-      actual = Parser.parse_property_identity(chunk, %{})
+      actual = Parser.parse_property_identity(chunk, %A{})
       assert expected == actual
     end
   end
@@ -24,28 +25,28 @@ defmodule ExSgf.ParserTest do
     test "continues until there is a closing bracket" do
       chunk = "[foobarbaz]"
       expected = {["foobarbaz"], ""}
-      actual = Parser.parse_property_value(chunk, %{property_value: [], value_status: :closed})
+      actual = Parser.parse_property_value(chunk, %A{property_value: [], value_status: :closed})
       assert expected == actual
     end
 
     test "continues while there is an opening bracket after a closing bracket" do
       chunk = "[foobarbaz][foobarqux]"
       expected = {["foobarbaz", "foobarqux"], ""}
-      actual = Parser.parse_property_value(chunk, %{property_value: [], value_status: :closed})
+      actual = Parser.parse_property_value(chunk, %A{property_value: [], value_status: :closed})
       assert expected == actual
     end
 
     test "reads multiple values on multiple lines" do
       chunk = "[foobarbaz]\n[foobarqux]"
       expected = {["foobarbaz", "foobarqux"], ""}
-      actual = Parser.parse_property_value(chunk, %{property_value: [], value_status: :closed})
+      actual = Parser.parse_property_value(chunk, %A{property_value: [], value_status: :closed})
       assert expected == actual
     end
 
     test "treat an escaped closing bracket as part of the value" do
       chunk = "[foobar\\]baz]"
       expected = {["foobar\\]baz"], ""}
-      actual = Parser.parse_property_value(chunk, %{property_value: [], value_status: :closed})
+      actual = Parser.parse_property_value(chunk, %A{property_value: [], value_status: :closed})
       assert expected == actual
     end
   end
@@ -54,14 +55,14 @@ defmodule ExSgf.ParserTest do
     test "can be empty" do
       chunk = ";;"
       expected = RoseTree.new(%{})
-      {";", actual} = Parser.parse_node(chunk, %{})
+      {";", actual} = Parser.parse_node(chunk, %A{})
       assert expected == actual
     end
 
     test "has multiple properties" do
       chunk = ";KM[6.5]AB[dd][cc]"
       expected = RoseTree.new(%{"KM" => ["6.5"], "AB" => ["dd", "cc"]})
-      {"", actual} = Parser.parse_node(chunk, %{})
+      {"", actual} = Parser.parse_node(chunk, %A{})
       assert expected == actual
     end
   end
@@ -83,7 +84,7 @@ defmodule ExSgf.ParserTest do
       sgf = "(;KM[6.5];AB[dd][cc])"
       child = RoseTree.new(%{"AB" => ["cc", "dd"]})
       expected = RoseTree.new(%{"KM" => ["6.5"]}) |> RoseTree.add_child(child)
-      {"", zipper} = Parser.parse_gametree(sgf, %{open_branches: 0})
+      {"", zipper} = Parser.parse_gametree(sgf, %A{open_branches: 0})
       actual = zipper_to_tree(zipper.current_node)
       assert expected == actual
     end
@@ -106,7 +107,7 @@ defmodule ExSgf.ParserTest do
         |> RoseTree.Zipper.to_root()
         |> RoseTree.Zipper.to_tree()
 
-      {"", zipper} = Parser.parse_gametree(sgf, %{open_branches: 0})
+      {"", zipper} = Parser.parse_gametree(sgf, %A{open_branches: 0})
       actual = zipper_to_tree(zipper.current_node)
       assert expected == actual
     end
@@ -138,7 +139,7 @@ defmodule ExSgf.ParserTest do
         |> RoseTree.Zipper.to_root
         |> RoseTree.Zipper.to_tree
 
-      {"", zipper} = Parser.parse_gametree(sgf, %{open_branches: 0})
+      {"", zipper} = Parser.parse_gametree(sgf, %A{open_branches: 0})
       actual = zipper_to_tree(zipper.current_node)
       assert expected == actual
     end
@@ -151,6 +152,9 @@ defmodule ExSgf.ParserTest do
       {:ok, zipper} = ExSgf.from_string(sgf)
 
       actual = zipper_to_tree(zipper)
+      IO.puts "---------------------------"
+      IO.inspect actual
+      IO.inspect(RoseTree.paths(actual))
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
     end
@@ -160,6 +164,7 @@ defmodule ExSgf.ParserTest do
       {:ok, zipper} = ExSgf.from_string(sgf)
 
       actual = zipper_to_tree(zipper)
+
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
     end
