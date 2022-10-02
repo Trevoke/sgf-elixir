@@ -1,4 +1,5 @@
 defmodule ExSgf.Parser do
+  @whitespace [" ", "\n", "\t"]
   @new_node ";"
   @open_branch "("
   @close_branch ")"
@@ -33,30 +34,49 @@ defmodule ExSgf.Parser do
   def parse_collection(string), do: parse_collection(string, %{})
 
   def parse_collection(string, acc) do
-    tree = new_node() |> Zipper.from_tree()
+    root = new_node() |> Zipper.from_tree()
 
     acc =
       acc
-      |> Map.put(:current_node, tree)
+      |> Map.put(:current_node, root)
       |> Map.put(:open_branches, 0)
 
-    {gametrees, rest} = parse_gametree(string, acc)
-    # Map.put(collection, :gametrees, gametrees)
+    {"", acc} = parse_gametrees(string, acc)
+
+    {:ok, acc.current_node |> Zipper.to_root}
   end
 
-  def parse_gametree("", %{current_node: current_node}), do: {current_node, ""}
+  def parse_gametrees("", acc), do: {"", acc}
+  def parse_gametrees(<<" ", rest::binary>>, acc), do: parse_gametrees(rest, acc)
+  def parse_gametrees(<<"\n", rest::binary>>, acc), do: parse_gametrees(rest, acc)
+  def parse_gametrees(<<"\t", rest::binary>>, acc), do: parse_gametrees(rest, acc)
+
+  def parse_gametrees(string, acc) do
+    IO.inspect string
+    {string, acc} = parse_gametree(string, acc)
+    root = Zipper.to_root(acc.current_node)
+    parse_gametrees(string, Map.put(acc, :current_node, root))
+  end
+
+  def parse_gametree("", acc), do: {"", acc}
+  def parse_gametree(<<"\n", rest::binary>>, acc), do: parse_gametree(rest, acc)
+  def parse_gametree(<<" ", rest::binary>>, acc), do: parse_gametree(rest, acc)
+  def parse_gametree(<<"\t", rest::binary>>, acc), do: parse_gametree(rest, acc)
 
   def parse_gametree(<<@open_branch, rest::binary>>, %{} = acc) do
     acc = Map.put(acc, :open_branches, acc.open_branches + 1)
 
+
     parse_sequence(rest, acc)
+
   end
 
   def parse_gametree(
         <<@close_branch, rest::binary>>,
         %{current_node: current_node, open_branches: 0} = acc
       ) do
-    {current_node, rest}
+    {:ok, root} = Zipper.ascend(acc.current_node)
+    {rest, Map.put(acc, :current_node, root)}
   end
 
   def parse_gametree(<<@close_branch, rest::binary>>, %{} = acc) do
@@ -74,10 +94,15 @@ defmodule ExSgf.Parser do
       |> Map.put(:open_branches, acc.open_branches - 1)
       |> Map.put(:current_node, current_node)
 
+    #IO.inspect(rest)
     parse_sequence(rest, acc)
   end
 
-  def parse_sequence("", acc), do: {acc.current_node, ""}
+  def parse_sequence(<<"\n", rest::binary>>, acc), do: parse_sequence(rest, acc)
+  def parse_sequence(<<" ", rest::binary>>, acc), do: parse_sequence(rest, acc)
+  def parse_sequence(<<"\t", rest::binary>>, acc), do: parse_sequence(rest, acc)
+
+  def parse_sequence("", acc), do: {"", acc}
 
   def parse_sequence(<<@open_branch, rest::binary>> = string, acc) do
     parse_gametree(string, acc)
@@ -88,18 +113,23 @@ defmodule ExSgf.Parser do
   end
 
   def parse_sequence(string, %{} = acc) do
-    {node1, rest} = parse_node(string, acc)
+    {rest, node1} = parse_node(string, acc)
 
     current_node = maybe_add_child(Map.get(acc, :current_node, nil), node1)
+    IO.inspect current_node
     acc = Map.put(acc, :current_node, current_node)
     parse_sequence(rest, acc)
   end
+
+  def parse_node(<<"\n", rest::binary>>, acc), do: parse_node(rest, acc)
+  def parse_node(<<" ", rest::binary>>, acc), do: parse_node(rest, acc)
+  def parse_node(<<"\t", rest::binary>>, acc), do: parse_node(rest, acc)
 
   def parse_node(<<@new_node, rest::binary>>, %{} = acc) do
     {properties, rest} = parse_properties(rest, Map.put(acc, :properties, %{}))
     node1 = new_node(properties)
 
-    {node1, rest}
+    {rest, node1}
   end
 
   def parse_properties(<<@new_node, rest::binary>>, %{properties: properties} = acc) do
@@ -119,16 +149,27 @@ defmodule ExSgf.Parser do
   def parse_properties(rest, %{properties: properties} = acc) do
     {identity, rest} = parse_property_identity(rest, acc)
 
-    acc =
-      acc
-      |> Map.delete(:property_identity)
-      |> Map.put(:property_value, [])
-      |> Map.put(:value_status, :closed)
+    if identity == :no_prop do
+      {properties, rest}
+    else
+      acc =
+        acc
+        |> Map.delete(:property_identity)
+        |> Map.put(:property_value, [])
+        |> Map.put(:value_status, :closed)
 
-    {value, rest} = parse_property_value(rest, acc)
-    properties = Map.put(properties, identity, value)
-    parse_properties(rest, Map.put(acc, :properties, properties))
+      {value, rest} = parse_property_value(rest, acc)
+      properties = Map.put(properties, identity, value)
+      parse_properties(rest, Map.put(acc, :properties, properties))
+    end
   end
+
+  def parse_property_identity(<<@close_branch, rest::binary>> = string, acc), do: {:no_prop, string}
+  def parse_property_identity(<<@new_node, rest::binary>> = string, acc), do: {:no_prop, string}
+
+  def parse_property_identity(<<"\n", rest::binary>>, acc), do: parse_property_identity(rest, acc)
+  def parse_property_identity(<<" ", rest::binary>>, acc), do: parse_property_identity(rest, acc)
+  def parse_property_identity(<<"\t", rest::binary>>, acc), do: parse_property_identity(rest, acc)
 
   def parse_property_identity(<<@open_value, _rest::binary>> = string, %{} = acc) do
     {acc.property_identity, string}
@@ -150,6 +191,15 @@ defmodule ExSgf.Parser do
     {Enum.reverse(x), ""}
   end
 
+  def parse_property_value(<<" ", rest::binary>>, %{value_status: :closed} = acc) do
+    parse_property_value(rest, acc)
+  end
+  def parse_property_value(<<"\n", rest::binary>>, %{value_status: :closed} = acc) do
+    parse_property_value(rest, acc)
+  end
+  def parse_property_value(<<"\t", rest::binary>>, %{value_status: :closed} = acc) do
+    parse_property_value(rest, acc)
+  end
   def parse_property_value(
         <<@open_value, rest::binary>>,
         %{property_value: value, value_status: :closed} = acc
