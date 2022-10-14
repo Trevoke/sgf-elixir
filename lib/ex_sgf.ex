@@ -3,12 +3,12 @@ defmodule ExSgf do
   Documentation for `ExSgf`.
   """
 
-  alias ExSgf.{Collection,GameTree, Parser}
+  alias ExSgf.Parser.Collection, as: CollectionParser
 
   @doc """
   Hello world.
   """
   def from_string(string) do
-    Parser.parse_collection(string)
+    CollectionParser.parse(string)
   end
 end
