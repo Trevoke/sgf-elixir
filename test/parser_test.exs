@@ -130,15 +130,10 @@ defmodule ExSgf.ParserTest do
         |> Z.to_tree()
 
       {"", acc} = P.Gametree.parse(sgf, %A{current_node: root_zipper})
-      IO.inspect acc
       actual = zipper_to_tree(acc.current_node)
-      IO.inspect actual
       assert expected == actual
     end
 
-    test "closes two branches in a row" do
-      sgf = ""
-    end
   end
 
   describe "whitespace" do
@@ -167,7 +162,7 @@ defmodule ExSgf.ParserTest do
         |> Z.lift(&Z.to_root/1)
         |> Z.to_tree
 
-      {"", zipper} = P.Gametree.parse(sgf, %A{current_node: root_zipper})
+      {"\n", zipper} = P.Gametree.parse(sgf, %A{current_node: root_zipper})
       actual = zipper_to_tree(zipper.current_node)
       assert expected == actual
     end
@@ -176,7 +171,7 @@ defmodule ExSgf.ParserTest do
   describe "collection" do
 
     test "ignores whitespace in collection parsing" do
-      sgf = "(;C[g1root](;C[g1b1c1])(;C[g1b2c1];C[g1b2c2])) \n (;C[g2root];C[g2b1c1)"
+      sgf = "\n (;C[g1root](;C[g1b1c1])(;C[g1b2c1];C[g1b2c2])) \n (;C[g2root];C[g2b1c1) \n "
 
       colroot = ExSgf.Node.new(%{collection_root: true})
 
@@ -221,14 +216,26 @@ defmodule ExSgf.ParserTest do
 #      IO.inspect(RoseTree.paths(actual))
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
+      assert expected == actual
     end
 
     test "holds multiple gametrees" do
+      sgf = "(;KM[6.5])(;KM[0.5])"
+      {:ok, zipper} = ExSgf.from_string(sgf)
+      actual = zipper_to_tree(zipper)
+      IO.inspect RoseTree.to_list(actual)
+      gametree_count = Enum.count(actual.children)
+      IO.inspect actual
+      assert gametree_count == 2
+    end
+
+    test "parses the example SGF from red bean website correctly" do
       {:ok, sgf} = File.read(Path.join([Path.dirname(__ENV__.file), "data", "ff4_ex.sgf"]))
       {:ok, zipper} = ExSgf.from_string(sgf)
 
       actual = zipper_to_tree(zipper)
-      #IO.inspect RoseTree.to_list(actual)
+      IO.inspect RoseTree.to_list(actual)
+      IO.inspect actual
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
     end
