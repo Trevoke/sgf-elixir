@@ -34,7 +34,9 @@ defmodule ExSgf.Parser.Collection do
 
   def parse(sgf, acc) do
     root = Z.from_tree(collection_root())
-    acc = Map.put(acc, :current_node, root)
+    acc =
+      acc
+      |> Map.put(:current_node, root)
 
     {"", acc} = parse_gametrees(sgf, acc)
 
@@ -48,21 +50,22 @@ defmodule ExSgf.Parser.Collection do
 
   def parse_gametrees(sgf, acc) do
     subtree_root = ExSgf.Node.new |> Z.from_tree()
-    {chunk, new_acc} = GametreeParser.parse(sgf, Map.put(acc, :current_node, subtree_root))
-
-    IO.inspect chunk
-    IO.inspect new_acc.current_node
+    new_acc =
+      acc
+      |> Map.put(:gametree_status, :open)
+      |> Map.put(:current_node, subtree_root)
+    {chunk, new_acc} = GametreeParser.parse(sgf, new_acc)
 
     subtree =
       new_acc.current_node
       |> Z.to_root
       |> Z.first_child
-      |> Z.lift(&Z.to_tree/1)
+      |> Z.lift(&Z.to_tree/1) #|> IO.inspect
 
     {:ok, current_node} =
       acc.current_node
       |> Z.insert_last_child(subtree)
-      |> Z.lift(&Z.ascend/1)
+      |> Z.lift(&Z.ascend/1) #|> IO.inspect
 
     parse_gametrees(chunk, Map.put(new_acc, :current_node, current_node))
   end

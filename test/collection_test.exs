@@ -18,7 +18,7 @@ defmodule ExSgf.CollectionTest do
   describe "collection" do
 
     test "ignores whitespace in collection parsing" do
-      sgf = "\n (;C[g1root](;C[g1b1c1])(;C[g1b2c1];C[g1b2c2])) \n (;C[g2root];C[g2b1c1) \n "
+      sgf = "\n (;C[g1root](;C[g1b1c1])(;C[g1b2c1];C[g1b2c2])) \n (;C[g2root];C[g2b1c1]) \n "
 
       colroot = ExSgf.Node.new(%{collection_root: true})
 
@@ -27,7 +27,7 @@ defmodule ExSgf.CollectionTest do
       g1b2c1 = ExSgf.Node.new(%{"C" => ["g1b2c1"]})
       g1b2c2 = ExSgf.Node.new(%{"C" => ["g1b2c2"]})
       g2root = ExSgf.Node.new(%{"C" => ["g2root"]})
-      g2b1c1 = ExSgf.Node.new(%{"C" => ["g2b1c2"]})
+      g2b1c1 = ExSgf.Node.new(%{"C" => ["g2b1c1"]})
 
       g1 =
         g1root
@@ -53,14 +53,14 @@ defmodule ExSgf.CollectionTest do
         |> Z.lift(&Z.to_root/1)
         |> Z.to_tree
 
-      #IO.inspect RoseTree.to_list(expected)
       {:ok, zipper} = ExSgf.from_string(sgf)
       actual = zipper_to_tree(zipper)
 
-      IO.inspect actual
-#      IO.puts "---------------------------"
+      #IO.inspect actual
+#      IO.inspect RT.to_list(actual)
+      #      IO.puts "---------------------------"
 #      IO.inspect actual
-#      IO.inspect(RoseTree.paths(actual))
+      IO.inspect(RoseTree.paths(actual))
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
       assert expected == actual
@@ -70,9 +70,7 @@ defmodule ExSgf.CollectionTest do
       sgf = "(;KM[6.5])(;KM[0.5])"
       {:ok, zipper} = ExSgf.from_string(sgf)
       actual = zipper_to_tree(zipper)
-      IO.inspect RoseTree.to_list(actual)
       gametree_count = Enum.count(actual.children)
-      IO.inspect actual
       assert gametree_count == 2
     end
 
@@ -81,8 +79,6 @@ defmodule ExSgf.CollectionTest do
       {:ok, zipper} = ExSgf.from_string(sgf)
 
       actual = zipper_to_tree(zipper)
-      IO.inspect RoseTree.to_list(actual)
-      IO.inspect actual
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
     end

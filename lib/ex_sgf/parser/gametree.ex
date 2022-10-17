@@ -5,16 +5,37 @@ defmodule ExSgf.Parser.Gametree do
   @open_branch "("
   @close_branch ")"
 
-  def parse(sgf, %A{gametree_status: :closed} = acc), do: {sgf, acc}
   def parse("", acc), do: {"", acc}
+  def parse(sgf, %A{gametree_status: :closed} = acc), do: {sgf, acc}
+  def parse(<<@close_branch, rest::binary>> = chunk, %A{open_branches: 1} = acc) do
+    IO.inspect chunk
+    acc =
+      acc
+      |> Map.put(:open_branches, acc.open_branches - 1)
+      |> Map.put(:gametree_status, :closed)
+    {rest, acc}
+  end
+  def parse(<<@close_branch, rest::binary>> = chunk, %A{} = acc) do
+    acc =
+      acc
+      |> Map.put(:open_branches, acc.open_branches - 1)
+    IO.inspect acc.open_branches
+    IO.inspect rest
+    parse(rest, acc)
+  end
+
   def parse(<<"\n", rest::binary>>, acc), do: parse(rest, acc)
   def parse(<<" ", rest::binary>>, acc), do: parse(rest, acc)
   def parse(<<"\t", rest::binary>>, acc), do: parse(rest, acc)
 
   def parse(<<@open_branch, rest::binary>>, %A{} = acc) do
-    acc = Map.put(acc, :open_branches, acc.open_branches + 1)
     new_zipper = Zipper.from_tree(ExSgf.Node.new)
-    {rest, new_acc} = SequenceParser.parse(rest, Map.put(acc, :current_node, new_zipper))
+    new_acc =
+      acc
+      |> Map.put(:open_branches, acc.open_branches + 1)
+      |> Map.put(:current_node, new_zipper)
+
+    {rest, new_acc} = SequenceParser.parse(rest, new_acc)
 
     subtree =
       new_acc.current_node
@@ -30,22 +51,7 @@ defmodule ExSgf.Parser.Gametree do
     new_acc =
       new_acc
       |> Map.put(:current_node, current_node)
-      |> Map.put(:open_branches, new_acc.open_branches - 1)
 
     parse(rest, new_acc)
   end
-
-  def parse(<<@close_branch, rest::binary>> = chunk, %A{open_branches: 0} = acc) do
-
-    acc =
-      acc
-      |> Map.put(:gametree_status, :closed)
-    {rest, acc}
-  end
-
-  def parse(<<@close_branch, rest::binary>> = chunk, acc) do
-    IO.inspect acc
-    parse(rest, acc)
-  end
-
 end
