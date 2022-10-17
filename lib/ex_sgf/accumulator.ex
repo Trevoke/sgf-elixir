@@ -6,5 +6,6 @@ defmodule ExSgf.Accumulator do
             properties: nil,
             property_identity: "",
             property_value: nil,
-            value_status: :closed
+            value_status: :closed,
+            gametree_status: :closed
 end

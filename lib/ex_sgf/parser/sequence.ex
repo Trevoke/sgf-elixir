@@ -17,14 +17,16 @@ defmodule ExSgf.Parser.Sequence do
   def parse("", acc), do: {"", acc}
 
   def parse(<<@open_branch, _rest::binary>> = chunk, acc) do
-    GametreeParser.parse(chunk, Map.put(acc, :open_branches, 0))
+    #GametreeParser.parse(chunk, Map.put(acc, :open_branches, 0))
+    GametreeParser.parse(chunk, acc)
     #{chunk, acc}
   end
 
   def parse(<<@close_branch, _rest::binary>> = chunk, %A{current_node: current_node} = acc) do
-    current_node = Zipper.to_root(current_node)
+    {chunk, acc}
+    #current_node = Zipper.to_root(current_node)
     #GametreeParser.parse(chunk, Map.put(acc, :current_node, current_node))
-    {chunk, Map.put(acc, :current_node, current_node)}
+    #{chunk, Map.put(acc, :current_node, current_node)}
   end
 
   def parse(<<@new_node, _rest::binary>> = chunk, %A{current_node: current_node} = acc) do
