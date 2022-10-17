@@ -25,3 +25,7 @@ ex_sgf-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+# dialyzer
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

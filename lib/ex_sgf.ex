@@ -8,6 +8,7 @@ defmodule ExSgf do
   @doc """
   Hello world.
   """
+  @spec from_string(String.t()) :: {:ok, RoseTree.Zipper.t()}
   def from_string(string) do
     CollectionParser.parse(string)
   end

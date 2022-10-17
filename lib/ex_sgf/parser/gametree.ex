@@ -6,6 +6,7 @@ defmodule ExSgf.Parser.Gametree do
   @open_branch "("
   @close_branch ")"
 
+  @spec parse(String.t(), A.t()) :: {String.t(), A.t()}
   def parse("", acc), do: {"", acc}
   def parse(sgf, %A{gametree_status: :closed} = acc), do: {sgf, acc}
 
@@ -38,11 +39,11 @@ defmodule ExSgf.Parser.Gametree do
 
     {rest, new_acc} = SequenceParser.parse(rest, new_acc)
 
-    subtree =
+    {:ok, subtree} =
       new_acc.current_node
       |> Zipper.to_root()
       |> Zipper.first_child()
-      |> Zipper.lift(&Zipper.to_tree/1)
+    subtree = Zipper.to_tree(subtree)
 
     {:ok, current_node} =
       acc.current_node
