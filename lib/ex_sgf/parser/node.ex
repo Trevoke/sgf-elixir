@@ -1,6 +1,5 @@
 defmodule ExSgf.Parser.Node do
   @moduledoc false
-  alias RoseTree, as: RTree
   alias ExSgf.Accumulator, as: A
   @whitespace [" ", "\n", "\t"]
   @new_node ";"
@@ -38,15 +37,15 @@ defmodule ExSgf.Parser.Node do
     {rest, node1}
   end
 
-  def parse_properties(<<@new_node, rest::binary>>, %A{properties: properties} = acc) do
+  def parse_properties(<<@new_node, rest::binary>>, %A{properties: properties}) do
     {properties, @new_node <> rest}
   end
 
-  def parse_properties(<<@open_branch, rest::binary>>, %A{properties: properties} = acc) do
+  def parse_properties(<<@open_branch, rest::binary>>, %A{properties: properties}) do
     {properties, @open_branch <> rest}
   end
 
-  def parse_properties(<<@close_branch, rest::binary>>, %A{properties: properties} = acc) do
+  def parse_properties(<<@close_branch, rest::binary>>, %A{properties: properties}) do
     {properties, @close_branch <> rest}
   end
 
@@ -70,8 +69,10 @@ defmodule ExSgf.Parser.Node do
     end
   end
 
-  def parse_property_identity(<<@close_branch, rest::binary>> = chunk, acc), do: {:no_prop, chunk}
-  def parse_property_identity(<<@new_node, rest::binary>> = chunk, acc), do: {:no_prop, chunk}
+  def parse_property_identity(<<@close_branch, _rest::binary>> = chunk, _acc),
+    do: {:no_prop, chunk}
+
+  def parse_property_identity(<<@new_node, _rest::binary>> = chunk, _acc), do: {:no_prop, chunk}
 
   def parse_property_identity(<<"\n", rest::binary>>, acc), do: parse_property_identity(rest, acc)
   def parse_property_identity(<<" ", rest::binary>>, acc), do: parse_property_identity(rest, acc)
@@ -123,7 +124,7 @@ defmodule ExSgf.Parser.Node do
 
   def parse_property_value(
         <<x::utf8, rest::binary>>,
-        %{property_value: value, value_status: :closed} = acc
+        %{property_value: value, value_status: :closed}
       ) do
     {value, List.to_string([x]) <> rest}
   end

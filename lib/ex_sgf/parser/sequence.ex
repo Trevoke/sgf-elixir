@@ -1,6 +1,5 @@
 defmodule ExSgf.Parser.Sequence do
   @moduledoc false
-  alias RoseTree, as: RTree
   alias RoseTree.Zipper
   alias ExSgf.Accumulator, as: A
   alias ExSgf.Parser.Gametree, as: GametreeParser
