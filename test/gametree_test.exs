@@ -10,8 +10,8 @@ defmodule ExSgf.GametreeTest do
 
   def zipper_to_tree(zipper) do
     zipper
-    |> RoseTree.Zipper.to_root()
-    |> RoseTree.Zipper.to_tree()
+    |> Z.to_root()
+    |> Z.to_tree()
   end
 
   describe "parser" do
@@ -40,7 +40,7 @@ defmodule ExSgf.GametreeTest do
         root_zipper
         |> Z.insert_last_child(g1)
         |> Z.lift(&Z.to_root/1)
-        |> Z.to_tree
+        |> Z.to_tree()
 
       {" \n (;C[g2root];C[g2b1c1]) \n ", acc} =
         P.Gametree.parse(sgf, %A{current_node: root_zipper, gametree_status: :open})

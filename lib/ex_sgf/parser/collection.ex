@@ -1,4 +1,5 @@
 defmodule ExSgf.Parser.Collection do
+  @moduledoc false
   alias RoseTree, as: RTree
   alias RoseTree.Zipper, as: Z
   alias ExSgf.Accumulator, as: A
@@ -26,15 +27,11 @@ defmodule ExSgf.Parser.Collection do
     "TW"
   ]
 
-
   def parse(sgf), do: parse(sgf, %A{})
 
   def parse(sgf, acc) do
     root = Z.from_tree(collection_root())
-    acc =
-      acc
-      |> Map.put(:current_node, root)
-
+    acc = Map.put(acc, :current_node, root)
     {"", acc} = parse_gametrees(sgf, acc)
 
     {:ok, Z.to_root(acc.current_node)}
@@ -46,17 +43,19 @@ defmodule ExSgf.Parser.Collection do
   def parse_gametrees(<<"\t", rest::binary>>, acc), do: parse_gametrees(rest, acc)
 
   def parse_gametrees(sgf, acc) do
-    subtree_root = ExSgf.Node.new |> Z.from_tree()
+    subtree_root = Z.from_tree(ExSgf.Node.new())
+
     new_acc =
       acc
       |> Map.put(:gametree_status, :open)
       |> Map.put(:current_node, subtree_root)
+
     {chunk, new_acc} = GametreeParser.parse(sgf, new_acc)
 
     subtree =
       new_acc.current_node
-      |> Z.to_root
-      |> Z.first_child
+      |> Z.to_root()
+      |> Z.first_child()
       |> Z.lift(&Z.to_tree/1)
 
     {:ok, current_node} =

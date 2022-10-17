@@ -67,5 +67,4 @@ defmodule ExSgf.NodeTest do
       assert expected == actual
     end
   end
-
 end

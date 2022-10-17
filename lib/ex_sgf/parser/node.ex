@@ -1,6 +1,6 @@
 defmodule ExSgf.Parser.Node do
+  @moduledoc false
   alias RoseTree, as: RTree
-  alias RoseTree.Zipper, as: Zipper
   alias ExSgf.Accumulator, as: A
   @whitespace [" ", "\n", "\t"]
   @new_node ";"
@@ -100,12 +100,15 @@ defmodule ExSgf.Parser.Node do
   def parse_property_value(<<" ", rest::binary>>, %{value_status: :closed} = acc) do
     parse_property_value(rest, acc)
   end
+
   def parse_property_value(<<"\n", rest::binary>>, %{value_status: :closed} = acc) do
     parse_property_value(rest, acc)
   end
+
   def parse_property_value(<<"\t", rest::binary>>, %{value_status: :closed} = acc) do
     parse_property_value(rest, acc)
   end
+
   def parse_property_value(
         <<@open_value, rest::binary>>,
         %{property_value: value, value_status: :closed} = acc
@@ -144,5 +147,4 @@ defmodule ExSgf.Parser.Node do
     value = [h <> List.to_string([x]) | t]
     parse_property_value(rest, Map.put(acc, :property_value, value))
   end
-
 end

@@ -17,10 +17,11 @@ defmodule ExSgf.SequenceTest do
   describe "sequences" do
     test "has two nodes one after the other" do
       chunk = ";;"
-      root = ExSgf.Node.new
+      root = ExSgf.Node.new()
       root_zipper = root |> Z.from_tree()
-      child = ExSgf.Node.new
-      parent = ExSgf.Node.new
+      child = ExSgf.Node.new()
+      parent = ExSgf.Node.new()
+
       expected =
         root_zipper
         |> Z.insert_last_child(parent)
@@ -29,10 +30,10 @@ defmodule ExSgf.SequenceTest do
         |> elem(1)
         |> Z.to_root()
         |> Z.to_tree()
+
       {"", zipper} = P.Sequence.parse(chunk, %A{current_node: root_zipper})
       actual = zipper_to_tree(zipper.current_node)
       assert expected == actual
     end
   end
-
 end

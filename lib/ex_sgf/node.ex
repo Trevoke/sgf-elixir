@@ -1,4 +1,6 @@
 defmodule ExSgf.Node do
+  @moduledoc false
+
   alias RoseTree, as: RT
 
   def new(), do: new(%{})

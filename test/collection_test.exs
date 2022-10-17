@@ -12,7 +12,6 @@ defmodule ExSgf.CollectionTest do
   end
 
   describe "collection" do
-
     test "ignores whitespace in collection parsing" do
       sgf = "\n (;C[g1root](;C[g1b1c1])(;C[g1b2c1];C[g1b2c2])) \n (;C[g2root];C[g2b1c1]) \n "
 
@@ -33,13 +32,15 @@ defmodule ExSgf.CollectionTest do
         |> Z.lift(&Z.insert_last_child(&1, g1b2c1))
         |> Z.lift(&Z.insert_last_child(&1, g1b2c2))
         |> Z.lift(&Z.to_root/1)
-        |> Z.to_tree
+        |> Z.to_tree()
+
       g2 =
         g2root
         |> Z.from_tree()
         |> Z.insert_last_child(g2b1c1)
         |> Z.lift(&Z.to_root/1)
-        |> Z.to_tree
+        |> Z.to_tree()
+
       expected =
         colroot
         |> Z.from_tree()
@@ -47,7 +48,7 @@ defmodule ExSgf.CollectionTest do
         |> Z.lift(&Z.ascend/1)
         |> Z.lift(&Z.insert_last_child(&1, g2))
         |> Z.lift(&Z.to_root/1)
-        |> Z.to_tree
+        |> Z.to_tree()
 
       {:ok, zipper} = ExSgf.from_string(sgf)
       actual = zipper_to_tree(zipper)
