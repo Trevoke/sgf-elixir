@@ -3,9 +3,7 @@ defmodule ExSgf.NodeTest do
 
   alias ExSgf.Parser, as: P
   alias ExSgf.Accumulator, as: A
-
-  alias RoseTree, as: RT
-  alias RoseTree.Zipper, as: Z
+  alias ExSgf.Node
 
   doctest ExSgf.Parser
 
@@ -57,14 +55,14 @@ defmodule ExSgf.NodeTest do
   describe "nodes" do
     test "can be empty" do
       chunk = ";;"
-      expected = RoseTree.new(%{})
+      expected = Node.new(%{})
       {";", actual} = P.Node.parse(chunk, %A{})
       assert expected == actual
     end
 
     test "has multiple properties" do
       chunk = ";KM[6.5]AB[dd][cc]"
-      expected = RoseTree.new(%{"KM" => ["6.5"], "AB" => ["dd", "cc"]})
+      expected = Node.new(%{"KM" => ["6.5"], "AB" => ["dd", "cc"]})
       {"", actual} = P.Node.parse(chunk, %A{})
       assert expected == actual
     end

@@ -8,9 +8,6 @@ defmodule ExSgf.Parser.Collection do
   @open_branch "("
   @close_branch ")"
   @end_of_file false
-  @node_delimiters [@new_node, @open_branch, @close_branch, @end_of_file]
-  @open_value "["
-  @close_value "]"
   @list_identities [
     "AW",
     "AB",
@@ -60,12 +57,12 @@ defmodule ExSgf.Parser.Collection do
       new_acc.current_node
       |> Z.to_root
       |> Z.first_child
-      |> Z.lift(&Z.to_tree/1) #|> IO.inspect
+      |> Z.lift(&Z.to_tree/1)
 
     {:ok, current_node} =
       acc.current_node
       |> Z.insert_last_child(subtree)
-      |> Z.lift(&Z.ascend/1) #|> IO.inspect
+      |> Z.lift(&Z.ascend/1)
 
     parse_gametrees(chunk, Map.put(new_acc, :current_node, current_node))
   end

@@ -8,7 +8,6 @@ defmodule ExSgf.Parser.Gametree do
   def parse("", acc), do: {"", acc}
   def parse(sgf, %A{gametree_status: :closed} = acc), do: {sgf, acc}
   def parse(<<@close_branch, rest::binary>> = chunk, %A{open_branches: 1} = acc) do
-    IO.inspect chunk
     acc =
       acc
       |> Map.put(:open_branches, acc.open_branches - 1)
@@ -19,8 +18,6 @@ defmodule ExSgf.Parser.Gametree do
     acc =
       acc
       |> Map.put(:open_branches, acc.open_branches - 1)
-    IO.inspect acc.open_branches
-    IO.inspect rest
     parse(rest, acc)
   end
 

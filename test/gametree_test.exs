@@ -4,7 +4,6 @@ defmodule ExSgf.GametreeTest do
   alias ExSgf.Parser, as: P
   alias ExSgf.Accumulator, as: A
 
-  alias RoseTree, as: RT
   alias RoseTree.Zipper, as: Z
 
   doctest ExSgf.Parser
@@ -47,8 +46,6 @@ defmodule ExSgf.GametreeTest do
         P.Gametree.parse(sgf, %A{current_node: root_zipper, gametree_status: :open})
 
       actual = zipper_to_tree(acc.current_node)
-      IO.inspect RT.to_list(expected)
-      IO.inspect RT.to_list(actual)
       assert expected == actual
     end
   end

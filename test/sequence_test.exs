@@ -4,7 +4,6 @@ defmodule ExSgf.SequenceTest do
   alias ExSgf.Parser, as: P
   alias ExSgf.Accumulator, as: A
 
-  alias RoseTree, as: RT
   alias RoseTree.Zipper, as: Z
 
   doctest ExSgf.Parser
@@ -30,7 +29,7 @@ defmodule ExSgf.SequenceTest do
         |> elem(1)
         |> Z.to_root()
         |> Z.to_tree()
-      {"", zipper} = ExSgf.Parser.Sequence.parse(chunk, %A{current_node: root_zipper})
+      {"", zipper} = P.Sequence.parse(chunk, %A{current_node: root_zipper})
       actual = zipper_to_tree(zipper.current_node)
       assert expected == actual
     end

@@ -1,10 +1,6 @@
 defmodule ExSgf.CollectionTest do
   use ExUnit.Case, async: true
 
-  alias ExSgf.Parser, as: P
-  alias ExSgf.Accumulator, as: A
-
-  alias RoseTree, as: RT
   alias RoseTree.Zipper, as: Z
 
   doctest ExSgf.Parser
@@ -56,11 +52,6 @@ defmodule ExSgf.CollectionTest do
       {:ok, zipper} = ExSgf.from_string(sgf)
       actual = zipper_to_tree(zipper)
 
-      #IO.inspect actual
-#      IO.inspect RT.to_list(actual)
-      #      IO.puts "---------------------------"
-#      IO.inspect actual
-      IO.inspect(RoseTree.paths(actual))
       gametree_count = Enum.count(actual.children)
       assert gametree_count == 2
       assert expected == actual
