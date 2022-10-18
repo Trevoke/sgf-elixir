@@ -27,12 +27,13 @@ defmodule ExSgf.Parser.Node do
     "TW"
   ]
 
+  @spec parse(binary(), A.t()) :: {binary(), RoseTree.t()}
   def parse(<<"\n", rest::binary>>, acc), do: parse(rest, acc)
   def parse(<<" ", rest::binary>>, acc), do: parse(rest, acc)
   def parse(<<"\t", rest::binary>>, acc), do: parse(rest, acc)
 
   def parse(<<@new_node, rest::binary>>, %{} = acc) do
-    {properties, rest} = parse_properties(rest, Map.put(acc, :properties, %{}))
+    {properties, rest} = parse_properties(rest, struct(acc, properties: %{}))
     node1 = ExSgf.Node.new(properties)
     {rest, node1}
   end
@@ -59,13 +60,13 @@ defmodule ExSgf.Parser.Node do
     else
       acc =
         acc
-        |> Map.delete(:property_identity)
-        |> Map.put(:property_value, [])
-        |> Map.put(:value_status, :closed)
+        |> struct(property_identity: "")
+        |> struct(property_value: [])
+        |> struct(value_status: :closed)
 
       {value, rest} = parse_property_value(rest, acc)
       properties = Map.put(properties, identity, value)
-      parse_properties(rest, Map.put(acc, :properties, properties))
+      parse_properties(rest, struct(acc, properties: properties))
     end
   end
 
@@ -116,8 +117,8 @@ defmodule ExSgf.Parser.Node do
       ) do
     acc =
       acc
-      |> Map.put(:property_value, ["" | value])
-      |> Map.put(:value_status, :open)
+      |> struct(property_value: ["" | value])
+      |> struct(value_status: :open)
 
     parse_property_value(rest, acc)
   end
@@ -130,7 +131,7 @@ defmodule ExSgf.Parser.Node do
   end
 
   def parse_property_value(<<@close_value, rest::binary>>, %{value_status: :open} = acc) do
-    parse_property_value(rest, Map.put(acc, :value_status, :closed))
+    parse_property_value(rest, struct(acc, value_status: :closed))
   end
 
   def parse_property_value(
@@ -138,7 +139,7 @@ defmodule ExSgf.Parser.Node do
         %{property_value: [h | t], value_status: :open} = acc
       ) do
     value = [h <> "\\]" | t]
-    parse_property_value(rest, Map.put(acc, :property_value, value))
+    parse_property_value(rest, struct(acc, property_value: value))
   end
 
   def parse_property_value(
@@ -146,6 +147,6 @@ defmodule ExSgf.Parser.Node do
         %{property_value: [h | t], value_status: :open} = acc
       ) do
     value = [h <> List.to_string([x]) | t]
-    parse_property_value(rest, Map.put(acc, :property_value, value))
+    parse_property_value(rest, struct(acc, property_value: value))
   end
 end

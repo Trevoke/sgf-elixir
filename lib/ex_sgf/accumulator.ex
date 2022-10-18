@@ -2,22 +2,22 @@ defmodule ExSgf.Accumulator do
   @moduledoc false
 
   @type status :: :closed | :open
-  @type property_value :: String.t() | nil
-  @type properties :: map() | nil
+  @type property_value :: binary() | nil
+  @type sgf_node :: RoseTree.Zipper.t() | nil
 
   defstruct current_node: nil,
             open_branches: 0,
-            properties: nil,
+            properties: %{},
             property_identity: "",
             property_value: nil,
             value_status: :closed,
             gametree_status: :closed
 
   @type t :: %__MODULE__{
-          current_node: RoseTree.Zipper.t(),
+          current_node: sgf_node,
           open_branches: non_neg_integer(),
-          properties: properties,
-          property_identity: String.t(),
+          properties: map(),
+          property_identity: binary(),
           property_value: property_value,
           value_status: status,
           gametree_status: status

@@ -5,11 +5,9 @@ defmodule ExSgf do
 
   alias ExSgf.Parser.Collection, as: CollectionParser
 
-  @doc """
-  Hello world.
-  """
-  @spec from_string(String.t()) :: {:ok, RoseTree.Zipper.t()}
-  def from_string(string) do
+
+  @spec from_string(binary()) :: {:ok, RoseTree.Zipper.t()}
+  def from_string(string) when is_binary(string) do
     CollectionParser.parse(string)
   end
 end
