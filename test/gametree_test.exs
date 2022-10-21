@@ -21,10 +21,10 @@ defmodule ExSgf.GametreeTest do
       colroot = ExSgf.Node.new(%{collection_root: true})
       root_zipper = Z.from_tree(colroot)
 
-      g1root = ExSgf.Node.new(%{"C" => ["g1root"]})
-      g1b1c1 = ExSgf.Node.new(%{"C" => ["g1b1c1"]})
-      g1b2c1 = ExSgf.Node.new(%{"C" => ["g1b2c1"]})
-      g1b2c2 = ExSgf.Node.new(%{"C" => ["g1b2c2"]})
+      g1root = ExSgf.Node.new(%{"C" => "g1root"})
+      g1b1c1 = ExSgf.Node.new(%{"C" => "g1b1c1"})
+      g1b2c1 = ExSgf.Node.new(%{"C" => "g1b2c1"})
+      g1b2c2 = ExSgf.Node.new(%{"C" => "g1b2c2"})
 
       g1 =
         g1root
@@ -60,18 +60,18 @@ defmodule ExSgf.GametreeTest do
 
       game_root =
         %{
-          "BR" => ["1p"],
-          "DT" => ["1697-09-24"],
-          "JD" => ["Genroku 10-8-10"],
-          "KM" => ["0"],
-          "PB" => ["Kumagaya Honseki"],
-          "PW" => ["Honinbo Dosaku"],
-          "RE" => ["B+1"]
+          "BR" => "1p",
+          "DT" => "1697-09-24",
+          "JD" => "Genroku 10-8-10",
+          "KM" => "0",
+          "PB" => "Kumagaya Honseki",
+          "PW" => "Honinbo Dosaku",
+          "RE" => "B+1"
         }
         |> RoseTree.new()
 
-      move1 = %{"B" => ["cp"]} |> RoseTree.new()
-      move2 = %{"W" => ["pq"]} |> RoseTree.new()
+      move1 = %{"B" => "cp"} |> RoseTree.new()
+      move2 = %{"W" => "pq"} |> RoseTree.new()
 
       expected =
         root_zipper
@@ -94,7 +94,7 @@ defmodule ExSgf.GametreeTest do
       sgf = "(;KM[6.5];AB[dd][cc])"
       root = ExSgf.Node.new()
       root_zipper = Z.from_tree(root)
-      parent = ExSgf.Node.new(%{"KM" => ["6.5"]})
+      parent = ExSgf.Node.new(%{"KM" => "6.5"})
       child = ExSgf.Node.new(%{"AB" => ["cc", "dd"]})
 
       expected =
@@ -112,7 +112,7 @@ defmodule ExSgf.GametreeTest do
     test "tracks sub-branches" do
       sgf = "(;KM[6.5](;AB[dd][cc])(;AW[ff][gg]))"
       root = ExSgf.Node.new()
-      game_root = ExSgf.Node.new(%{"KM" => ["6.5"]})
+      game_root = ExSgf.Node.new(%{"KM" => "6.5"})
       add_black = ExSgf.Node.new(%{"AB" => ["cc", "dd"]})
       add_white = ExSgf.Node.new(%{"AW" => ["gg", "ff"]})
 

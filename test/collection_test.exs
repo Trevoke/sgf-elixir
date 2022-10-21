@@ -17,12 +17,12 @@ defmodule ExSgf.CollectionTest do
 
       colroot = ExSgf.Node.new(%{collection_root: true})
 
-      g1root = ExSgf.Node.new(%{"C" => ["g1root"]})
-      g1b1c1 = ExSgf.Node.new(%{"C" => ["g1b1c1"]})
-      g1b2c1 = ExSgf.Node.new(%{"C" => ["g1b2c1"]})
-      g1b2c2 = ExSgf.Node.new(%{"C" => ["g1b2c2"]})
-      g2root = ExSgf.Node.new(%{"C" => ["g2root"]})
-      g2b1c1 = ExSgf.Node.new(%{"C" => ["g2b1c1"]})
+      g1root = ExSgf.Node.new(%{"C" => "g1root"})
+      g1b1c1 = ExSgf.Node.new(%{"C" => "g1b1c1"})
+      g1b2c1 = ExSgf.Node.new(%{"C" => "g1b2c1"})
+      g1b2c2 = ExSgf.Node.new(%{"C" => "g1b2c2"})
+      g2root = ExSgf.Node.new(%{"C" => "g2root"})
+      g2b1c1 = ExSgf.Node.new(%{"C" => "g2b1c1"})
 
       g1 =
         g1root
