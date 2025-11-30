@@ -18,7 +18,10 @@ defmodule ExSgf.Parser.Sequence do
   def parse("", acc), do: {"", acc}
 
   def parse(<<@open_branch, _rest::binary>> = chunk, acc) do
-    GametreeParser.parse(chunk, acc)
+    # Process the nested branch
+    {rest, acc} = GametreeParser.parse(chunk, acc)
+    # Continue parsing - there might be more sibling branches or content
+    parse(rest, acc)
   end
 
   def parse(<<@close_branch, _rest::binary>> = chunk, %A{} = acc) do
