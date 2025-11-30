@@ -4,11 +4,9 @@ defmodule ExSgf.Parser.Sequence do
   alias ExSgf.Accumulator, as: A
   alias ExSgf.Parser.Gametree, as: GametreeParser
   alias ExSgf.Parser.Node, as: NodeParser
-  @whitespace [" ", "\n", "\t"]
   @new_node ";"
   @open_branch "("
   @close_branch ")"
-  @node_delimiters [@new_node, @open_branch, @close_branch]
 
   @spec parse(binary(), A.t()) :: {binary(), A.t()}
   def parse(<<"\n", rest::binary>>, acc), do: parse(rest, acc)

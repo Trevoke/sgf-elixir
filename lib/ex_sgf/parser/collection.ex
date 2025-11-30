@@ -4,7 +4,6 @@ defmodule ExSgf.Parser.Collection do
   alias RoseTree.Zipper, as: Z
   alias ExSgf.Accumulator, as: A
   alias ExSgf.Parser.Gametree, as: GametreeParser
-  @whitespace [" ", "\n", "\t"]
 
   @spec parse(binary()) :: {:ok, RoseTree.Zipper.t()}
   def parse(sgf) when is_binary(sgf), do: parse(sgf, %A{})

@@ -1,10 +1,7 @@
 defmodule ExSgf.Parser.Properties do
-  @whitespace [" ", "\n", "\t"]
   @new_node ";"
   @open_branch "("
   @close_branch ")"
-  @end_of_file false
-  @node_delimiters [@new_node, @open_branch, @close_branch, @end_of_file]
   @open_value "["
   @close_value "]"
   @list_identities [

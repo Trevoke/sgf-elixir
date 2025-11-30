@@ -4,7 +4,7 @@ defmodule ExSgf.MixProject do
   def project do
     [
       app: :ex_sgf,
-      version: "0.3.0",
+      version: "0.4.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -28,9 +28,9 @@ defmodule ExSgf.MixProject do
     [
       {:nimble_parsec, "~> 1.4"},
       {:rose_tree, "~> 0.2.0"},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.39", only: :dev, runtime: false}
     ]
   end
 
